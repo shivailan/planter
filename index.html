@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GoalFlow | Elite SaaS</title>
+    <title>GoalFlow | Agenda Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -14,265 +14,209 @@
             --accent: #FF2D55;
             --text-main: #FFFFFF;
             --text-dim: #8E8E93;
-            --success: #32D74B;
-            --nav-bg: rgba(0,0,0,0.9);
-            --border: #333;
+            --border: #222;
+            --grid-line: #1c1c1c;
         }
 
-        /* --- MODE CLAIR --- */
         .light-theme {
-            --bg: #F2F2F7;
-            --surface: #FFFFFF;
+            --bg: #FFFFFF;
+            --surface: #F2F2F7;
             --text-main: #000000;
             --text-dim: #8E8E93;
-            --nav-bg: rgba(255,255,255,0.8);
-            --border: #D1D1D6;
+            --border: #E5E5EA;
+            --grid-line: #F2F2F7;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; transition: background 0.3s, color 0.3s; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; transition: background 0.3s; }
         body { background-color: var(--bg); color: var(--text-main); height: 100vh; overflow: hidden; }
 
-        /* --- SYSTÈME DE PAGES --- */
-        .page {
+        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; padding-bottom: 90px; }
+        .active-page { display: flex; }
+
+        /* --- HEADER AGENDA --- */
+        .agenda-header {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            border-bottom: 1px solid var(--border);
+            padding-top: 20px;
+            background: var(--bg);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .header-day { text-align: center; padding: 10px 0; border-right: 1px solid transparent; }
+        .header-day span { display: block; font-size: 10px; color: var(--text-dim); font-weight: 800; }
+        .header-day b { font-size: 16px; }
+        .header-day.today b { color: var(--accent); position: relative; }
+
+        /* --- GRILLE --- */
+        .agenda-container { flex: 1; overflow-y: auto; position: relative; }
+        .time-grid { display: grid; grid-template-columns: 60px repeat(7, 1fr); position: relative; }
+        .time-label { height: 80px; font-size: 11px; color: var(--text-dim); text-align: right; padding-right: 12px; margin-top: -8px; }
+        .grid-cell { height: 80px; border-right: 1px solid var(--grid-line); border-bottom: 1px solid var(--grid-line); position: relative; }
+
+        /* --- TASKS --- */
+        .event-card {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            padding: 25px;
-            padding-bottom: 110px;
-            overflow-y: auto;
-            display: none;
-            flex-direction: column;
-        }
-        .active-page { display: flex; animation: pageIn 0.3s ease-out; }
-
-        @keyframes pageIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            left: 2px; right: 2px;
+            background: var(--accent);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 6px;
+            border-radius: 6px;
+            overflow: hidden;
+            z-index: 5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border-left: 3px solid rgba(255,255,255,0.3);
         }
 
-        /* --- ÉLÉMENTS COMMUNS --- */
-        .main-goal-card {
-            background: var(--surface);
-            padding: 30px; border-radius: 35px; border: 1px solid var(--border); margin: 30px 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        /* --- MODAL --- */
+        #modal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
         }
-        .main-goal-card h2 { font-size: 11px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-        
-        .stat-box { background: var(--surface); padding: 20px; border-radius: 25px; border: 1px solid var(--border); text-align: center; }
-        .stat-box i { color: var(--accent); margin-bottom: 10px; font-size: 20px; }
-
-        .cta-big {
-            background: var(--text-main); color: var(--bg); padding: 22px; 
-            border-radius: 25px; display: flex; justify-content: space-between; align-items: center;
-            font-weight: 900; cursor: pointer;
+        .modal-box { 
+            background: var(--surface); width: 100%; max-width: 400px; 
+            border-radius: 30px; padding: 30px; border: 1px solid var(--border);
+        }
+        input, select { 
+            width: 100%; background: var(--bg); border: 1px solid var(--border); 
+            color: var(--text-main); padding: 15px; border-radius: 12px; margin-bottom: 15px; outline: none;
         }
 
-        /* --- PLANNER --- */
-        .progress-container { background: var(--surface); height: 8px; border-radius: 10px; width: 100%; overflow: hidden; margin-bottom: 25px; }
-        .progress-bar { background: var(--accent); height: 100%; width: 0%; transition: width 0.6s ease; }
-
-        .day-card { min-width: 65px; height: 85px; background: var(--surface); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--border); }
-        .day-card.active { background: var(--accent); color: white; border-color: var(--accent); }
-        .day-card.active span { color: white; }
-
-        .task-card { 
-            background: var(--surface); padding: 20px; border-radius: 22px; 
-            display: flex; align-items: center; gap: 15px; border: 1px solid var(--border); 
-            margin-bottom: 12px;
-        }
-        .checkbox { width: 26px; height: 26px; border: 2px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-        .completed .checkbox { background: var(--success); border-color: var(--success); color: white; }
-        .task-card.swiped { transform: translateX(120%); opacity: 0; }
-
-        /* --- PAGE MOI --- */
-        .settings-item {
-            background: var(--surface); padding: 20px; border-radius: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 15px; border: 1px solid var(--border);
-        }
-
-        /* --- NAVIGATION --- */
-        nav { position: fixed; bottom: 0; width: 100%; height: 90px; background: var(--nav-bg); backdrop-filter: blur(20px); display: flex; justify-content: space-around; padding-top: 15px; border-top: 1px solid var(--border); z-index: 100; }
-        .nav-item { color: var(--text-dim); text-align: center; font-size: 10px; font-weight: 700; cursor: pointer; }
+        /* --- NAV --- */
+        nav { position: fixed; bottom: 0; width: 100%; height: 85px; background: var(--bg); display: flex; justify-content: space-around; padding-top: 15px; border-top: 1px solid var(--border); }
+        .nav-item { color: var(--text-dim); text-align: center; font-size: 10px; cursor: pointer; }
         .nav-item.active { color: var(--accent); }
-        .nav-item i { font-size: 24px; margin-bottom: 5px; display: block; }
-        .add-btn { position: fixed; bottom: 110px; right: 25px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 10px 20px rgba(255, 45, 85, 0.4); z-index: 90; }
-
-        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: flex-end; z-index: 200; }
-        .modal-box { background: var(--surface); width: 100%; border-radius: 35px 35px 0 0; padding: 30px; border-top: 1px solid var(--border); }
+        .nav-item i { font-size: 22px; margin-bottom: 4px; display: block; }
+        
+        .btn-add { 
+            background: var(--accent); color: white; border: none; 
+            width: 100%; padding: 18px; border-radius: 15px; font-weight: 900; cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <div id="page-home" class="page active-page">
-        <div style="margin-top:20px;"><p id="date-label" style="color:var(--text-dim); font-size:14px;">Chargement...</p><h1>Salut Chef.</h1></div>
-        <div class="main-goal-card"><h2>Vision Maître</h2><p style="font-size:24px; font-weight:900;">Devenir Millionnaire 🚀</p></div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:30px;">
-            <div class="stat-box"><i class="fa-solid fa-fire"></i><span id="streak-val">12</span><label style="font-size:10px; color:var(--text-dim)">SÉRIE</label></div>
-            <div class="stat-box"><i class="fa-solid fa-chart-line"></i><span id="rate-val">0%</span><label style="font-size:10px; color:var(--text-dim)">SUCCÈS</label></div>
+    <div id="page-home" class="page active-page" style="padding: 30px;">
+        <h1 style="font-size: 38px; font-weight: 900; margin-top: 50px; letter-spacing: -1px;">Agenda.<br><span style="color:var(--accent)">Elite</span></h1>
+        <p style="color:var(--text-dim); margin-top: 10px;">Gérez votre temps comme un pro.</p>
+        
+        <div style="background:var(--surface); padding:25px; border-radius:30px; margin-top:40px; border:1px solid var(--border);" onclick="goToPage('weekly')">
+            <p style="font-size: 12px; color:var(--accent); font-weight:800; letter-spacing:1px; margin-bottom:10px;">PLANNING</p>
+            <h2 style="font-size: 20px;">Ouvrir la vue hebdomadaire</h2>
         </div>
-        <div class="cta-big" onclick="goToPage('planner')"><span>OUVRIR LE PLANNER</span><i class="fa-solid fa-arrow-right"></i></div>
-    </div>
-
-    <div id="page-planner" class="page">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h2 style="font-size: 28px; font-weight: 900;">Planner</h2><span onclick="goToPage('weekly')" style="color:var(--accent); font-weight:800; font-size:12px;">VUE SEMAINE</span></div>
-        <div class="progress-container"><div id="pb" class="progress-bar"></div></div>
-        <div id="calendar-nav" style="display:flex; gap:12px; overflow-x:auto; padding-bottom:15px;"></div>
-        <div id="task-list" style="margin-top:20px;"></div>
     </div>
 
     <div id="page-weekly" class="page">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h2 style="font-size: 28px; font-weight: 900;">Ma Semaine</h2><span onclick="goToPage('planner')" style="color:var(--accent); font-weight:800; font-size:12px;">RETOUR</span></div>
-        <div id="weekly-list"></div>
-    </div>
-
-    <div id="page-recap" class="page">
-        <h2 style="font-size: 28px; font-weight: 900; margin-bottom:30px; text-align:center;">Récapitulatif</h2>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-            <div><h3 style="color:var(--success); font-size:12px; margin-bottom:15px;">VICTOIRES 🔥</h3><div id="wins"></div></div>
-            <div><h3 style="color:var(--accent); font-size:12px; margin-bottom:15px;">ÉCHECS 🧊</h3><div id="fails"></div></div>
+        <div class="agenda-header" id="agenda-header"></div>
+        <div class="agenda-container">
+            <div class="time-grid" id="time-grid"></div>
         </div>
     </div>
 
-    <div id="page-moi" class="page">
-        <h2 style="font-size: 28px; font-weight: 900; margin-bottom:30px;">Mon Profil</h2>
-        <div class="settings-item" onclick="toggleTheme()">
-            <div>
-                <p style="font-weight:700;">Mode Clair</p>
-                <p style="font-size:12px; color:var(--text-dim);">Activer pour une meilleure lisibilité</p>
+    <div id="modal">
+        <div class="modal-box">
+            <h2 style="margin-bottom:20px;">Nouvel Objectif</h2>
+            <input type="text" id="task-title" placeholder="Titre de l'objectif...">
+            <div style="display: flex; gap: 10px;">
+                <select id="task-day">
+                    <option value="0">Lundi</option>
+                    <option value="1">Mardi</option>
+                    <option value="2">Mercredi</option>
+                    <option value="3">Jeudi</option>
+                    <option value="4">Vendredi</option>
+                    <option value="5">Samedi</option>
+                    <option value="6">Dimanche</option>
+                </select>
+                <select id="task-hour">
+                    </select>
             </div>
-            <i class="fa-solid fa-circle-half-stroke" style="font-size:20px; color:var(--accent);"></i>
-        </div>
-        <div class="settings-item">
-            <p style="font-weight:700;">Mes Associés</p>
-            <span style="font-size:12px; color:var(--text-dim);">2 connectés</span>
+            <button class="btn-add" onclick="addTask()">PLANIFIER</button>
+            <button style="background:transparent; color:var(--text-dim); border:none; width:100%; margin-top:15px;" onclick="closeModal()">Annuler</button>
         </div>
     </div>
-
-    <div id="modal" onclick="this.style.display='none'">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <h3 style="margin-bottom:20px;">Nouvel Objectif</h3>
-            <input type="text" id="task-input" placeholder="Ton prochain move..." style="background:rgba(128,128,128,0.1); border:none; color:var(--text-main); width:100%; padding:20px; border-radius:15px; margin-bottom:20px; outline:none; font-size:16px;">
-            <button onclick="addTask()" style="background:var(--accent); color:white; width:100%; padding:20px; border-radius:15px; border:none; font-weight:900; width:100%;">VALIDER</button>
-        </div>
-    </div>
-
-    <div class="add-btn" onclick="document.getElementById('modal').style.display='flex'"><i class="fa-solid fa-plus"></i></div>
 
     <nav>
         <div class="nav-item active" id="btn-home" onclick="goToPage('home')"><i class="fa-solid fa-house"></i><span>Home</span></div>
-        <div class="nav-item" id="btn-planner" onclick="goToPage('planner')"><i class="fa-solid fa-calendar-day"></i><span>Planner</span></div>
-        <div class="nav-item" id="btn-recap" onclick="goToPage('recap')"><i class="fa-solid fa-chart-pie"></i><span>Récap</span></div>
-        <div class="nav-item" id="btn-moi" onclick="goToPage('moi')"><i class="fa-solid fa-circle-user"></i><span>Moi</span></div>
+        <div class="nav-item" id="btn-weekly" onclick="goToPage('weekly')"><i class="fa-solid fa-calendar-days"></i><span>Agenda</span></div>
+        <div class="nav-item" onclick="openModal()"><i class="fa-solid fa-circle-plus" style="color:var(--accent); font-size: 30px;"></i></div>
+        <div class="nav-item" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i><span>Thème</span></div>
     </nav>
 
 <script>
-    let allTasks = JSON.parse(localStorage.getItem('goalflow_tasks')) || {};
-    let selectedDate = new Date().toISOString().split('T')[0];
-    let touchX = 0;
+    // Structure des données : { "0": [{h: 10, title: "Faire du sport"}], "1": [] }
+    let calendarData = JSON.parse(localStorage.getItem('goalflow_calendar')) || { "0":[], "1":[], "2":[], "3":[], "4":[], "5":[], "6":[] };
 
     function toggleTheme() {
         document.body.classList.toggle('light-theme');
-        const isLight = document.body.classList.contains('light-theme');
-        localStorage.setItem('goalflow_theme', isLight ? 'light' : 'dark');
     }
+
+    function openModal() { document.getElementById('modal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
     function goToPage(pageId) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById('page-' + pageId).classList.add('active-page');
         if(document.getElementById('btn-' + pageId)) document.getElementById('btn-' + pageId).classList.add('active');
-        if(pageId === 'home') updateHome();
-        if(pageId === 'planner') renderTasks();
-        if(pageId === 'weekly') renderWeekly();
-        if(pageId === 'recap') renderRecap();
+        if(pageId === 'weekly') renderAgenda();
     }
 
-    function updateHome() {
-        const tasks = Object.values(allTasks).flat();
-        const done = tasks.filter(t => t.done).length;
-        document.getElementById('rate-val').innerText = tasks.length > 0 ? Math.round((done/tasks.length)*100) + "%" : "0%";
-        document.getElementById('date-label').innerText = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
-    }
-
-    function renderTasks() {
-        const list = document.getElementById('task-list'); list.innerHTML = '';
-        const tasks = allTasks[selectedDate] || [];
-        tasks.forEach((t, i) => {
-            const card = document.createElement('div');
-            card.className = `task-card ${t.done ? 'completed' : ''}`;
-            card.innerHTML = `<div class="checkbox">${t.done ? '✓' : ''}</div><span style="flex:1; font-weight:600;">${t.text}</span>`;
-            card.addEventListener('touchstart', e => touchX = e.changedTouches[0].screenX);
-            card.addEventListener('touchend', e => {
-                if(e.changedTouches[0].screenX - touchX > 100) {
-                    card.classList.add('swiped');
-                    setTimeout(() => { tasks.splice(i, 1); save(); renderTasks(); }, 300);
-                } else if(Math.abs(e.changedTouches[0].screenX - touchX) < 10) {
-                    t.done = !t.done; save(); renderTasks();
-                }
-            });
-            list.appendChild(card);
-        });
-        document.getElementById('pb').style.width = (tasks.length > 0 ? (tasks.filter(t=>t.done).length / tasks.length)*100 : 0) + "%";
-        initCalendar();
-    }
-
-    function initCalendar() {
-        const nav = document.getElementById('calendar-nav'); nav.innerHTML = '';
-        for(let i=-1; i<6; i++){
-            const d = new Date(); d.setDate(new Date().getDate()+i);
-            const s = d.toISOString().split('T')[0];
-            const div = document.createElement('div');
-            div.className = `day-card ${s===selectedDate?'active':''}`;
-            div.onclick = () => { selectedDate = s; renderTasks(); };
-            div.innerHTML = `<span style="font-size:10px">${['DIM','LUN','MAR','MER','JEU','VEN','SAM'][d.getDay()]}</span><span style="font-size:20px; font-weight:900;">${d.getDate()}</span>`;
-            nav.appendChild(div);
-        }
-    }
-
-    function renderWeekly() {
-        const list = document.getElementById('weekly-list'); list.innerHTML = '';
-        for(let i=0; i<7; i++) {
-            const d = new Date(); d.setDate(new Date().getDate() + i);
-            const s = d.toISOString().split('T')[0];
-            const tasks = allTasks[s] || [];
-            const card = document.createElement('div');
-            card.style = "background:var(--surface); padding:20px; border-radius:25px; margin-bottom:15px; border:1px solid var(--border);";
-            card.innerHTML = `<p style="font-weight:900; color:var(--accent); margin-bottom:10px;">${d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric'})}</p>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">${tasks.map(t => `<div style="font-size:10px; background:rgba(128,128,128,0.1); padding:8px; border-radius:10px; ${t.done?'border:1px solid var(--success)':''}">${t.text}</div>`).join('') || '<span style="color:#333; font-size:10px;">Repos</span>'}</div>`;
-            list.appendChild(card);
-        }
-    }
-
-    function renderRecap() {
-        const w = document.getElementById('wins'); w.innerHTML = '';
-        const f = document.getElementById('fails'); f.innerHTML = '';
-        Object.values(allTasks).flat().forEach(t => {
-            const d = document.createElement('div');
-            d.className = `recap-item ${t.done?'done':''}`; d.innerText = t.text;
-            d.style = `background:var(--surface); padding:15px; border-radius:15px; margin-bottom:10px; border-left:4px solid ${t.done?'var(--success)':'var(--accent)'}; font-size:13px;`;
-            t.done ? w.appendChild(d) : f.appendChild(d);
-        });
+    // Générer les heures dans le select
+    const hourSelect = document.getElementById('task-hour');
+    for(let i=7; i<=22; i++) {
+        hourSelect.innerHTML += `<option value="${i}">${i}h00</option>`;
     }
 
     function addTask() {
-        const val = document.getElementById('task-input').value;
-        if(val) {
-            if(!allTasks[selectedDate]) allTasks[selectedDate] = [];
-            allTasks[selectedDate].push({text: val, done: false});
-            save(); document.getElementById('modal').style.display='none';
-            document.getElementById('task-input').value='';
-            const activePage = document.querySelector('.active-page').id;
-            if(activePage==='page-planner') renderTasks();
-            if(activePage==='page-weekly') renderWeekly();
+        const title = document.getElementById('task-title').value;
+        const day = document.getElementById('task-day').value;
+        const hour = document.getElementById('task-hour').value;
+
+        if(title) {
+            calendarData[day].push({ title: title, hour: parseInt(hour) });
+            localStorage.setItem('goalflow_calendar', JSON.stringify(calendarData));
+            document.getElementById('task-title').value = '';
+            closeModal();
+            renderAgenda();
         }
     }
 
-    function save() { localStorage.setItem('goalflow_tasks', JSON.stringify(allTasks)); }
-    
-    // Au chargement : Restaurer le thème
-    if(localStorage.getItem('goalflow_theme') === 'light') document.body.classList.add('light-theme');
-    updateHome();
+    function renderAgenda() {
+        const header = document.getElementById('agenda-header');
+        const grid = document.getElementById('time-grid');
+        header.innerHTML = '<div></div>';
+        grid.innerHTML = '';
+
+        const days = ['LUN','MAR','MER','JEU','VEN','SAM','DIM'];
+        
+        // Header
+        days.forEach((d, i) => {
+            header.innerHTML += `<div class="header-day"><span>${d}</span><b>${7+i}</b></div>`;
+        });
+
+        // Grille et Tâches
+        for(let h=7; h<=22; h++) {
+            grid.innerHTML += `<div class="time-label">${h}:00</div>`;
+            for(let d=0; d<7; d++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                
+                // Chercher si une tâche existe pour ce jour et cette heure
+                const dayTasks = calendarData[d.toString()] || [];
+                const task = dayTasks.find(t => t.hour === h);
+                
+                if(task) {
+                    cell.innerHTML = `<div class="event-card">${task.title}</div>`;
+                }
+                
+                grid.appendChild(cell);
+            }
+        }
+    }
+
+    // Initialisation
+    renderAgenda();
 </script>
 </body>
 </html>
